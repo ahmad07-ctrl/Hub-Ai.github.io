@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-AI Hub - Connexion</title>
+    <style>
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           PARTICULES D'ANIMATION (savoir, discipline, luxure)
+           ============================================================ */
+        .particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: floatParticle linear infinite;
+        }
+
+        .particle.savoir {
+            background: radial-gradient(circle, #6c3ce0, transparent);
+            box-shadow: 0 0 40px rgba(108, 60, 224, 0.3);
+        }
+        .particle.discipline {
+            background: radial-gradient(circle, #10a37f, transparent);
+            box-shadow: 0 0 40px rgba(16, 163, 127, 0.3);
+        }
+        .particle.luxure {
+            background: radial-gradient(circle, #ef4444, transparent);
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(100vh) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+           OVERLAY DE CONNEXION
+           ============================================================ */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .auth-overlay.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+
+        .auth-card {
+            background: linear-gradient(145deg, #1a1a2e, #14141f);
+            border-radius: 28px;
+            padding: 48px 40px 40px;
+            width: 420px;
+            max-width: 92%;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(168, 85, 247, 0.03), transparent, rgba(168, 85, 247, 0.03), transparent);
+            animation: rotateGlow 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotateGlow {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .auth-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo .icon {
+            font-size: 52px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .auth-logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6c3ce0, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-logo p {
+            color: #666699;
+            font-size: 14px;
+            margin-top: 4px;
+            -webkit-text-fill-color: #666699;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 28px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #666699;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.05);
+        }
+
+        .auth-tab:hover:not(.active) {
+            color: #aaaadd;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .auth-form.hidden {
+            display: none;
+        }
+
+        .auth-form label {
+            font-size: 13px;
+            color: #8888bb;
+            font-weight: 500;
+        }
+
+        .auth-form input {
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.3s;
+            outline: none;
+            width: 100%;
+        }
+
+        .auth-form input:focus {
+            border-color: rgba(168, 85, 247, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.05);
+        }
+
+        .auth-form input::placeholder {
+            color: #444466;
+        }
+
+        .auth-btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6c3ce0, #a855f7);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+            box-shadow: 0 4px 25px rgba(168, 85, 247, 0.15);
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 40px rgba(168, 85, 247, 0.25);
+        }
+
+        .auth-btn:active {
+            transform: scale(0.97);
+        }
+
+        .auth-error {
+            color: #ef4444;
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .auth-success {
+            color: #22c55e;
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        /* ============================================================
+           APPLICATION PRINCIPALE (cachée au départ)
+           ============================================================ */
+        .app-container {
+            width: 1000px;
+            max-width: 100%;
+            height: 750px;
+            max-height: 98vh;
+            background: linear-gradient(145deg, #111120, #1a1a2e);
+            border-radius: 28px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            z-index: 1;
+            position: relative;
+        }
+
+        .app-container.visible {
+            display: flex;
+        }
+
+        /* ============================================================
+           EN-TÊTE APP
+           ============================================================ */
+        .header {
+            padding: 14px 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6c3ce0, #a855f7);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .header-title span {
+            color: #a855f7;
+        }
+
+        .header-user {
+            color: #666699;
+            font-size: 13px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #8888bb;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-btn:hover {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.2);
+            color: #fff;
+        }
+
+        .header-btn.primary {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .header-btn.primary:hover {
+            background: rgba(168, 85, 247, 0.25);
+        }
+
+        /* ============================================================
+           SÉLECTEUR D'IA
+           ============================================================ */
+        .model-selector {
+            display: flex;
+            gap: 6px;
+            padding: 10px 24px 6px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .model-btn {
+            padding: 6px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            color: #666699;
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .model-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaaadd;
+        }
+
+        .model-btn.active {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+        }
+
+        .model-btn .badge {
+            font-size: 9px;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 1px 8px;
+            border-radius: 10px;
+            color: #444466;
+        }
+
+        .model-btn.active .badge {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        /* ============================================================
+           UPLOAD FICHIERS
+           ============================================================ */
+        .upload-area {
+            padding: 6px 24px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            align-items: center;
+        }
+
+        .upload-btn {
+            padding: 6px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            color: #666699;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .upload-btn:hover {
+            background: rgba(168, 85, 247, 0.08);
+            border-color: rgba(168, 85, 247, 0.15);
+            color: #aaaadd;
+        }
+
+        .upload-btn input[type="file"] {
+            display: none;
+        }
+
+        .upload-status {
+            color: #444466;
+            font-size: 11px;
+            margin-left: auto;
+        }
+
+        .upload-status .file-name {
+            color: #8888bb;
+        }
+
+        /* ============================================================
+           MESSAGES
+           ============================================================ */
+        .messages-container {
+            flex: 1;
+            padding: 14px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scroll-behavior: smooth;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: rgba(168, 85, 247, 0.2);
+            border-radius: 10px;
+        }
+
+        .message {
+            max-width: 88%;
+            padding: 12px 18px;
+            border-radius: 14px;
+            line-height: 1.6;
+            font-size: 14.5px;
+            animation: fadeInMsg 0.35s ease;
+            word-wrap: break-word;
+        }
+
+        @keyframes fadeInMsg {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #6c3ce0, #8b5cf6);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.03);
+            color: #d4d4ee;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message .msg-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8888bb;
+        }
+
+        .message .msg-header .ai-icon {
+            font-size: 16px;
+        }
+
+        .message .msg-header .ai-name {
+            color: #a855f7;
+        }
+
+        .message .file-attachment {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #8888bb;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .message .file-attachment .file-icon {
+            font-size: 20px;
+        }
+
+        .message .timestamp {
+            font-size: 10px;
+            opacity: 0.3;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Couleurs spécifiques aux IA */
+        .message.ai.claude .msg-header .ai-name {
+            color: #a855f7;
+        }
+        .message.ai.chatgpt .msg-header .ai-name {
+            color: #10a37f;
+        }
+        .message.ai.deepseek .msg-header .ai-name {
+            color: #4d6bfe;
+        }
+        .message.ai.gemini .msg-header .ai-name {
+            color: #4285f4;
+        }
+        .message.ai.mistral .msg-header .ai-name {
+            color: #f97316;
+        }
+
+        /* ============================================================
+           TYPING
+           ============================================================ */
+        .typing-indicator {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            border-bottom-left-radius: 4px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: fadeInMsg 0.3s ease;
+        }
+
+        .typing-indicator .dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #a855f7;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.3;
+            }
+            30% {
+                transform: translateY(-6px);
+                opacity: 1;
+            }
+        }
+
+        .typing-indicator .typing-label {
+            color: #555577;
+            font-size: 13px;
+        }
+
+        /* ============================================================
+           ZONE DE SAISIE
+           ============================================================ */
+        .input-area {
+            padding: 12px 24px 16px;
+            background: rgba(0, 0, 0, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .input-wrapper textarea {
+            width: 100%;
+            padding: 12px 16px;
+            padding-right: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            font-size: 14.5px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: all 0.3s;
+            min-height: 46px;
+            max-height: 120px;
+            line-height: 1.5;
+        }
+
+        .input-wrapper textarea:focus {
+            border-color: rgba(168, 85, 247, 0.25);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .input-wrapper textarea::placeholder {
+            color: #444466;
+        }
+
+        .input-wrapper .char-count {
+            position: absolute;
+            bottom: 10px;
+            right: 14px;
+            font-size: 11px;
+            color: #333355;
+            pointer-events: none;
+        }
+
+        .btn-send {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #6c3ce0, #a855f7);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 46px;
+            white-space: nowrap;
+            box-shadow: 0 4px 25px rgba(168, 85, 247, 0.15);
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 35px rgba(168, 85, 247, 0.25);
+        }
+
+        .btn-send:active {
+            transform: scale(0.97);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 700px) {
+            .app-container {
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+
+            .header {
+                padding: 10px 14px;
+            }
+
+            .header-title {
+                font-size: 15px;
+            }
+
+            .model-selector {
+                padding: 6px 14px 4px;
+                gap: 4px;
+            }
+
+            .model-btn {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+
+            .model-btn .badge {
+                display: none;
+            }
+
+            .messages-container {
+                padding: 10px 14px;
+            }
+
+            .message {
+                max-width: 94%;
+                font-size: 13.5px;
+                padding: 10px 14px;
+            }
+
+            .input-area {
+                padding: 8px 14px 12px;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .btn-send {
+                width: 100%;
+                justify-content: center;
+                min-height: 40px;
+            }
+
+            .upload-area {
+                padding: 4px 14px;
+                gap: 4px;
+            }
+
+            .upload-btn {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+
+            .header-actions .header-btn span {
+                display: none;
+            }
+
+            .auth-card {
+                padding: 32px 24px 28px;
+            }
+
+            .auth-logo h1 {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .model-btn {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+
+            .model-btn .icon {
+                font-size: 12px;
+            }
+
+            .header-logo {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .auth-card {
+                padding: 24px 16px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    PARTICULES ANIMÉES (Savoir, Discipline, Luxure)
+    ============================================================ -->
+    <div class="particle-container" id="particleContainer">
+        <!-- Les particules sont générées en JavaScript -->
+    </div>
+
+    <!-- ============================================================
+    PAGE DE CONNEXION / INSCRIPTION
+    ============================================================ -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <span class="icon">🧠</span>
+                <h1>Multi-AI Hub</h1>
+                <p>Claude · ChatGPT · DeepSeek · Gemini · Mistral</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Se connecter</button>
+                <button class="auth-tab" data-tab="register">S'inscrire</button>
+            </div>
+
+            <!-- Formulaire de connexion -->
+            <form class="auth-form" id="loginForm">
+                <div>
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="votre@email.com" required>
+                </div>
+                <div>
+                    <label>Mot de passe</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div class="auth-error" id="loginError"></div>
+                <button type="submit" class="auth-btn">🔓 Se connecter</button>
+            </form>
+
+            <!-- Formulaire d'inscription -->
+            <form class="auth-form hidden" id="registerForm">
+                <div>
+                    <label>Nom d'utilisateur</label>
+                    <input type="text" id="registerName" placeholder="Jean Dupont" required>
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" id="registerEmail" placeholder="votre@email.com" required>
+                </div>
+                <div>
+                    <label>Mot de passe</label>
+                    <input type="password" id="registerPassword" placeholder="•••••••• (min. 6 caractères)" required>
+                </div>
+                <div class="auth-error" id="registerError"></div>
+                <div class="auth-success" id="registerSuccess"></div>
+                <button type="submit" class="auth-btn">✨ S'inscrire</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    APPLICATION PRINCIPALE
+    ============================================================ -->
+    <div class="app-container" id="appContainer">
+
+        <!-- ===== EN-TÊTE ===== -->
+        <header class="header">
+            <div class="header-left">
+                <div class="header-logo">🧠</div>
+                <div>
+                    <div class="header-title">Multi-<span>AI</span> Hub</div>
+                    <div class="header-user" id="userDisplay">👤 Utilisateur</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn primary" id="newChatBtn">➕ Nouvelle discussion</button>
+                <button class="header-btn" id="exportBtn">📥 Exporter</button>
+                <button class="header-btn" id="logoutBtn">🚪 Déconnexion</button>
+            </div>
+        </header>
+
+        <!-- ===== SÉLECTEUR D'IA ===== -->
+        <div class="model-selector" id="modelSelector">
+            <button class="model-btn active" data-model="claude">
+                <span class="icon">🤖</span> Claude
+                <span class="badge">v3.5</span>
+            </button>
+            <button class="model-btn" data-model="chatgpt">
+                <span class="icon">💬</span> ChatGPT
+                <span class="badge">GPT-4</span>
+            </button>
+            <button class="model-btn" data-model="deepseek">
+                <span class="icon">🔍</span> DeepSeek
+                <span class="badge">v3</span>
+            </button>
+            <button class="model-btn" data-model="gemini">
+                <span class="icon">🌟</span> Gemini
+                <span class="badge">Pro</span>
+            </button>
+            <button class="model-btn" data-model="mistral">
+                <span class="icon">🌊</span> Mistral
+                <span class="badge">Large</span>
+            </button>
+        </div>
+
+        <!-- ===== UPLOAD FICHIERS ===== -->
+        <div class="upload-area">
+            <button class="upload-btn" id="uploadBtn">
+                📎 <span>Joindre un fichier</span>
+                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.png,.jpg,.jpeg,.gif,.webp,.csv,.xls,.xlsx">
+            </button>
+            <button class="upload-btn" id="uploadImageBtn">
+                🖼️ <span>Image</span>
+                <input type="file" id="imageInput" accept="image/*">
+            </button>
+            <span class="upload-status" id="uploadStatus">📎 Aucun fichier attaché</span>
+        </div>
+
+        <!-- ===== MESSAGES ===== -->
+        <div class="messages-container" id="messages">
+            <div class="message ai claude">
+                <div class="msg-header">
+                    <span class="ai-icon">🤖</span>
+                    <span class="ai-name">Claude</span>
+                </div>
+                Bonjour ! Je suis un hub d'intelligence artificielle multi-modèles. Vous pouvez basculer entre Claude, ChatGPT, DeepSeek, Gemini et Mistral. Chaque IA a ses propres forces et styles de réponse.
+                <span class="timestamp">À l'instant</span>
+            </div>
+        </div>
+
+        <!-- ===== ZONE DE SAISIE ===== -->
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea id="input" rows="1" placeholder="Posez votre question à l'IA sélectionnée... (ou joignez un fichier)" maxlength="3000"></textarea>
+                <span class="char-count" id="charCount">0</span>
+            </div>
+            <button class="btn-send" id="sendBtn">
+                <span>➤</span> Envoyer
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        // =============================================================
+        // PARTICULES ANIMÉES (Savoir, Discipline, Luxure)
+        // =============================================================
+        (function createParticles() {
+            const container = document.getElementById('particleContainer');
+            const types = ['savoir', 'discipline', 'luxure'];
+            const emojis = ['📚', '⚖️', '❤️'];
+
+            for (let i = 0; i < 45; i++) {
+                const particle = document.createElement('div');
+                const type = types[i % 3];
+                particle.className = `particle ${type}`;
+                const size = 15 + Math.random() * 35;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = 15 + Math.random() * 25 + 's';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.opacity = 0.1 + Math.random() * 0.25;
+
+                // Ajouter un emoji au centre
+                const emoji = document.createElement('span');
+                emoji.textContent = emojis[i % 3];
+                emoji.style.position = 'absolute';
+                emoji.style.top = '50%';
+                emoji.style.left = '50%';
+                emoji.style.transform = 'translate(-50%, -50%)';
+                emoji.style.fontSize = (size * 0.5) + 'px';
+                particle.appendChild(emoji);
+
+                container.appendChild(particle);
+            }
+        })();
+
+        // =============================================================
+        // CONFIGURATION DES MODÈLES
+        // =============================================================
+        const MODELS = {
+            claude: {
+                name: 'Claude',
+                icon: '🤖',
+                color: '#a855f7',
+                badge: 'v3.5 Sonnet',
+                context: '128k tokens · Anthropic',
+                systemPrompt: 'Tu es Claude, une IA créée par Anthropic. Tu es bienveillante, réfléchie et précise.'
+            },
+            chatgpt: {
+                name: 'ChatGPT',
+                icon: '💬',
+                color: '#10a37f',
+                badge: 'GPT-4',
+                context: '128k tokens · OpenAI',
+                systemPrompt: 'Tu es ChatGPT, une IA créée par OpenAI. Tu es polyvalente, créative et précise.'
+            },
+            deepseek: {
+                name: 'DeepSeek',
+                icon: '🔍',
+                color: '#4d6bfe',
+                badge: 'v3',
+                context: '1M tokens · DeepSeek',
+                systemPrompt: 'Tu es DeepSeek, une IA créée par DeepSeek. Tu es analytique, détaillée et technique.'
+            },
+            gemini: {
+                name: 'Gemini',
+                icon: '🌟',
+                color: '#4285f4',
+                badge: 'Pro',
+                context: '1M tokens · Google',
+                systemPrompt: 'Tu es Gemini, une IA créée par Google. Tu es polyvalente, multimodale et précise.'
+            },
+            mistral: {
+                name: 'Mistral',
+                icon: '🌊',
+                color: '#f97316',
+                badge: 'Large',
+                context: '128k tokens · Mistral AI',
+                systemPrompt: 'Tu es Mistral, une IA créée par Mistral AI. Tu es efficace, directe et puissante.'
+            }
+        };
+
+        // =============================================================
+        // RÉPONSES SIMULÉES PAR MODÈLE (avec analyse de fichiers)
+        // =============================================================
+        const RESPONSES = {
+            claude: [
+                "C'est une question profonde. Je vais y réfléchir avec soin.",
+                "Voici mon analyse nuancée de ce sujet complexe...",
+                "Je comprends votre point de vue. Permettez-moi d'apporter une perspective différente.",
+                "Excellente question ! Je vais décomposer cela étape par étape.",
+                "Je suis ravi que vous posiez cette question. Voici ce que j'en pense..."
+            ],
+            chatgpt: [
+                "Très bonne question ! Laissez-moi vous donner une réponse complète.",
+                "Je vois ce que vous voulez dire. Voici plusieurs angles d'approche.",
+                "C'est un sujet passionnant ! Je vais vous expliquer en détail.",
+                "Je comprends votre interrogation. Voici une réponse structurée.",
+                "Excellente observation ! Je vais approfondir ce point."
+            ],
+            deepseek: [
+                "Analyse en profondeur : voici les données pertinentes.",
+                "Approche systématique : décomposons ce problème.",
+                "Je détecte plusieurs variables. Voici une analyse technique.",
+                "Optimisation : je vous propose la solution la plus efficace.",
+                "Traitement des données : voici les insights clés."
+            ],
+            gemini: [
+                "Je vois le problème sous plusieurs angles. Voici ma synthèse.",
+                "Approche multimodale : je combine différentes perspectives.",
+                "C'est une question fascinante. Voici une réponse intégrée.",
+                "Je comprends le contexte. Voici une analyse complète.",
+                "Approche holistique : voici tous les aspects à considérer."
+            ],
+            mistral: [
+                "Direct et efficace : voici ma réponse.",
+                "Je vais droit au but : c'est ce qu'il faut retenir.",
+                "Pragmatique : voici la solution la plus simple.",
+                "Pas de blabla : voici les faits essentiels.",
+                "Concis et précis : je vous donne l'essentiel."
+            ]
+        };
+
+        // =============================================================
+        // GESTION DES UTILISATEURS (localStorage)
+        // =============================================================
+        const USERS_KEY = 'multiai_users';
+        const SESSION_KEY = 'multiai_session';
+        const CONVERSATIONS_KEY = 'multiai_conversations';
+
+        function getUsers() {
+            try {
+                return JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+            } catch {
+                return {};
+            }
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        }
+
+        function getSession() {
+            try {
+                return JSON.parse(localStorage.getItem(SESSION_KEY));
+            } catch {
+                return null;
+            }
+        }
+
+        function saveSession(email) {
+            localStorage.setItem(SESSION_KEY, JSON.stringify({ email, timestamp: Date.now() }));
+        }
+
+        function clearSession() {
+            localStorage.removeItem(SESSION_KEY);
+        }
+
+        function getConversations(email) {
+            try {
+                const all = JSON.parse(localStorage.getItem(CONVERSATIONS_KEY)) || {};
+                return all[email] || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveConversation(email, conversation) {
+            try {
+                const all = JSON.parse(localStorage.getItem(CONVERSATIONS_KEY)) || {};
+                all[email] = conversation;
+                localStorage.setItem(CONVERSATIONS_KEY, JSON.stringify(all));
+            } catch (e) {
+                console.error('Erreur sauvegarde:', e);
+            }
+        }
+
+        // =============================================================
+        // ÉTAT DE L'APPLICATION
+        // =============================================================
+        let currentModel = 'claude';
+        let isProcessing = false;
+        let conversationHistory = [];
+        let currentUser = null;
+        let attachedFiles = [];
+        let conversationId = Date.now();
+
+        // =============================================================
+        // DOM
+        // =============================================================
+        const authOverlay = document.getElementById('authOverlay');
+        const appContainer = document.getElementById('appContainer');
+        const messagesContainer = document.getElementById('messages');
+        const input = document.getElementById('input');
+        const sendBtn = document.getElementById('sendBtn');
+        const charCount = document.getElementById('charCount');
+        const userDisplay = document.getElementById('userDisplay');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const fileInput = document.getElementById('fileInput');
+        const imageInput = document.getElementById('imageInput');
+
+        // Auth
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const registerName = document.getElementById('registerName');
+        const registerEmail = document.getElementById('registerEmail');
+        const registerPassword = document.getElementById('registerPassword');
+        const loginError = document.getElementById('loginError');
+        const registerError = document.getElementById('registerError');
+        const registerSuccess = document.getElementById('registerSuccess');
+        const authTabs = document.querySelectorAll('.auth-tab');
+
+        // =============================================================
+        // FONCTIONS AUTH
+        // =============================================================
+        function switchAuthTab(tab) {
+            authTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+            loginForm.classList.toggle('hidden', tab !== 'login');
+            registerForm.classList.toggle('hidden', tab !== 'register');
+            loginError.textContent = '';
+            registerError.textContent = '';
+            registerSuccess.textContent = '';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!email || !password) {
+                loginError.textContent = '⚠️ Veuillez remplir tous les champs.';
+                return;
+            }
+
+            const users = getUsers();
+            if (!users[email] || users[email].password !== password) {
+                loginError.textContent = '❌ Email ou mot de passe incorrect.';
+                return;
+            }
+
+            loginError.textContent = '';
+            currentUser = email;
+            saveSession(email);
+            userDisplay.textContent = `👤 ${users[email].name || email}`;
+            authOverlay.classList.add('hidden');
+            appContainer.classList.add('visible');
+            loadConversation(email);
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = registerName.value.trim();
+            const email = registerEmail.value.trim();
+            const password = registerPassword.value.trim();
+
+            if (!name || !email || !password) {
+                registerError.textContent = '⚠️ Veuillez remplir tous les champs.';
+                return;
+            }
+
+            if (password.length < 6) {
+                registerError.textContent = '⚠️ Le mot de passe doit faire au moins 6 caractères.';
+                return;
+            }
+
+            const users = getUsers();
+            if (users[email]) {
+                registerError.textContent = '❌ Cet email est déjà utilisé.';
+                return;
+            }
+
+            users[email] = { name, password, created: Date.now() };
+            saveUsers(users);
+
+            registerError.textContent = '';
+            registerSuccess.textContent = '✅ Compte créé ! Connectez-vous maintenant.';
+            registerName.value = '';
+            registerEmail.value = '';
+            registerPassword.value = '';
+
+            // Basculer vers login après 1.5s
+            setTimeout(() => {
+                switchAuthTab('login');
+                loginEmail.value = email;
+                registerSuccess.textContent = '';
+            }, 1500);
+        }
+
+        function loadConversation(email) {
+            const convs = getConversations(email);
+            if (convs.length > 0) {
+                conversationHistory = convs;
+                // Reconstruire les messages dans l'UI
+                messagesContainer.innerHTML = '';
+                convs.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.role === 'user' ? 'user' : 'ai'}`;
+                    if (msg.role === 'assistant' && msg.model) {
+                        div.classList.add(msg.model);
+                        const header = document.createElement('div');
+                        header.className = 'msg-header';
+                        header.innerHTML = `
+                            <span class="ai-icon">${MODELS[msg.model].icon}</span>
+                            <span class="ai-name">${MODELS[msg.model].name}</span>
+                        `;
+                        div.appendChild(header);
+                    }
+                    const content = document.createElement('span');
+                    content.textContent = msg.content;
+                    div.appendChild(content);
+
+                    // Afficher les fichiers attachés
+                    if (msg.files && msg.files.length > 0) {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'file-attachment';
+                        fileDiv.innerHTML = msg.files.map(f =>
+                            `<span class="file-icon">${getFileIcon(f.name)}</span> ${f.name}`
+                        ).join('');
+                        div.appendChild(fileDiv);
+                    }
+
+                    const time = document.createElement('span');
+                    time.className = 'timestamp';
+                    time.textContent = msg.timestamp || 'À l\'instant';
+                    div.appendChild(time);
+
+                    messagesContainer.appendChild(div);
+                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } else {
+                // Message d'accueil par défaut
+                resetConversation();
+            }
+        }
+
+        function resetConversation() {
+            messagesContainer.innerHTML = `
+                <div class="message ai claude">
+                    <div class="msg-header">
+                        <span class="ai-icon">🤖</span>
+                        <span class="ai-name">Claude</span>
+                    </div>
+                    Bonjour ! Je suis un hub d'intelligence artificielle multi-modèles. Vous pouvez basculer entre Claude, ChatGPT, DeepSeek, Gemini et Mistral. Chaque IA a ses propres forces et styles de réponse.
+                    <span class="timestamp">À l'instant</span>
+                </div>
+            `;
+            conversationHistory = [];
+            conversationId = Date.now();
+            attachedFiles = [];
+            uploadStatus.textContent = '📎 Aucun fichier attaché';
+            if (currentUser) {
+                saveConversation(currentUser, conversationHistory);
+            }
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                pdf: '📄',
+                doc: '📝',
+                docx: '📝',
+                ppt: '📊',
+                pptx: '📊',
+                xls: '📊',
+                xlsx: '📊',
+                txt: '📃',
+                md: '📃',
+                png: '🖼️',
+                jpg: '🖼️',
+                jpeg: '🖼️',
+                gif: '🖼️',
+                webp: '🖼️',
+                csv: '📊',
+                json: '📋',
+                xml: '📋'
+            };
+            return icons[ext] || '📎';
+        }
+
+        function getFileTypeDescription(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const types = {
+                pdf: 'PDF',
+                doc: 'Document Word',
+                docx: 'Document Word',
+                ppt: 'Présentation PowerPoint',
+                pptx: 'Présentation PowerPoint',
+                xls: 'Tableur Excel',
+                xlsx: 'Tableur Excel',
+                txt: 'Fichier texte',
+                md: 'Markdown',
+                png: 'Image PNG',
+                jpg: 'Image JPEG',
+                jpeg: 'Image JPEG',
+                gif: 'Image GIF',
+                webp: 'Image WebP',
+                csv: 'Données CSV',
+                json: 'Données JSON',
+                xml: 'Données XML'
+            };
+            return types[ext] || 'Fichier';
+        }
+
+        // =============================================================
+        // FONCTIONS DE CHAT
+        // =============================================================
+        function getTimestamp() {
+            return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getFullTimestamp() {
+            return new Date().toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getModelResponse(model, userMessage, files) {
+            const lower = userMessage.toLowerCase();
+
+            // Si des fichiers sont attachés
+            if (files && files.length > 0) {
+                const fileList = files.map(f => `- ${f.name} (${getFileTypeDescription(f.name)})`).join('\n');
+                return `📎 J'ai analysé vos fichier(s) :
+
+                ${fileList}
+
+                ${MODELS[model].name} a analysé ces documents. Voici mon analyse :
+
+                Je peux voir que vous avez partagé ${files.length} fichier(s). Pour vous donner une réponse précise, pourriez-vous me préciser ce que vous souhaitez savoir sur ces documents ? Je peux les analyser en détail si vous me posez une question spécifique.
+
+                💡 Suggestions de questions :
+                - Résume ce document
+                - Quels sont les points clés ?
+                - Compare ces fichiers
+                - Extrais les données importantes
+                - Traduis ce contenu`;
+            }
+
+            // Réponses contextuelles
+            if (lower.includes('bonjour') || lower.includes('salut') || lower.includes('coucou')) {
+                return `Bonjour ! Je suis ${MODELS[model].name} ${MODELS[model].icon}. Comment puis-je vous aider aujourd'hui ? 🌟`;
+            }
+            if (lower.includes('merci') || lower.includes('merci beaucoup') || lower.includes('thanks')) {
+                return `Avec plaisir ! N'hésitez pas si vous avez d'autres questions. ${MODELS[model].icon}`;
+            }
+            if (lower.includes('au revoir') || lower.includes('bye') || lower.includes('a plus')) {
+                return `Au revoir ! Ce fut un plaisir de discuter avec vous. Revenez quand vous voulez. 👋`;
+            }
+            if (lower.includes('qui es-tu') || lower.includes('qui êtes-vous')) {
+                return `Je suis ${MODELS[model].name} ${MODELS[model].icon}, une IA ${model === 'claude' ? 'créée par Anthropic' :
+                    model === 'chatgpt' ? 'créée par OpenAI' :
+                    model === 'deepseek' ? 'créée par DeepSeek' :
+                    model === 'gemini' ? 'créée par Google' :
+                    'créée par Mistral AI'}. ${MODELS[model].systemPrompt}`;
+            }
+            if (lower.includes('compare') || lower.includes('différence') || lower.includes('versus')) {
+                return `📊 Comparaison des IA :
+                • **Claude** 🤖 : Réfléchie, nuancée, éthique
+                • **ChatGPT** 💬 : Polyvalente, créative, grand public
+                • **DeepSeek** 🔍 : Analytique, technique, code
+                • **Gemini** 🌟 : Multimodale, intégrée Google
+                • **Mistral** 🌊 : Efficace, directe, open-source
+
+                Chacune a ses forces ! Que voulez-vous approfondir ?`;
+            }
+            if (lower.includes('analyse') || lower.includes('analyse ce') || lower.includes('analyse le')) {
+                return `🔍 Analyse en cours...
+
+                ${MODELS[model].name} effectue une analyse approfondie de votre demande.
+
+                📊 Résultat de l'analyse :
+                ${Math.floor(Math.random() * 100)}% de pertinence détectée
+                ${Math.floor(2 + Math.random() * 5)} points clés identifiés
+
+                Je vous propose une analyse détaillée. Pouvez-vous préciser votre demande ?`;
+            }
+
+            // Réponse aléatoire du modèle
+            const modelResponses = RESPONSES[model] || RESPONSES.claude;
+            return modelResponses[Math.floor(Math.random() * modelResponses.length)];
+        }
+
+        function addMessage(text, isUser, model = null, files = null) {
+            const div = document.createElement('div');
+            div.className = `message ${isUser ? 'user' : 'ai'}`;
+
+            if (!isUser && model) {
+                div.classList.add(model);
+                const header = document.createElement('div');
+                header.className = 'msg-header';
+                header.innerHTML = `
+                    <span class="ai-icon">${MODELS[model].icon}</span>
+                    <span class="ai-name">${MODELS[model].name}</span>
+                `;
+                div.appendChild(header);
+            }
+
+            const content = document.createElement('span');
+            content.textContent = text;
+            div.appendChild(content);
+
+            // Afficher les fichiers attachés
+            if (files && files.length > 0) {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'file-attachment';
+                fileDiv.innerHTML = files.map(f =>
+                    `<span class="file-icon">${getFileIcon(f.name)}</span> ${f.name} (${getFileTypeDescription(f.name)})`
+                ).join('');
+                div.appendChild(fileDiv);
+            }
+
+            const time = document.createElement('span');
+            time.className = 'timestamp';
+            time.textContent = getTimestamp();
+            div.appendChild(time);
+
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Sauvegarder dans l'historique
+            const msg = {
+                role: isUser ? 'user' : 'assistant',
+                model: isUser ? null : model,
+                content: text,
+                files: files || [],
+                timestamp: getFullTimestamp()
+            };
+            conversationHistory.push(msg);
+
+            // Sauvegarder automatiquement
+            if (currentUser) {
+                saveConversation(currentUser, conversationHistory);
+            }
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'typing-indicator';
+            div.id = 'typing-indicator';
+            div.innerHTML = `
+                <div class="dots">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                <span class="typing-label">${MODELS[currentModel].name} analyse votre demande...</span>
+            `;
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        function updateModelButtons(model) {
+            document.querySelectorAll('.model-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.model === model);
+            });
+        }
+
+        function switchModel(model) {
+            if (model === currentModel) return;
+            currentModel = model;
+            updateModelButtons(model);
+            addMessage(
+                `🔄 Je suis maintenant ${MODELS[model].name} ${MODELS[model].icon}. ${MODELS[model].systemPrompt}`,
+                false,
+                model
+            );
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            const hasFiles = attachedFiles.length > 0;
+
+            if (!text && !hasFiles) return;
+            if (isProcessing) return;
+
+            // Ajouter le message utilisateur
+            addMessage(text || "🔍 Analyse de fichier(s)", true, null, hasFiles ? attachedFiles : null);
+
+            // Vider l'input et les fichiers
+            input.value = '';
+            attachedFiles = [];
+            uploadStatus.textContent = '📎 Aucun fichier attaché';
+            updateCharCount();
+            isProcessing = true;
+            sendBtn.disabled = true;
+
+            // Afficher le typing
+            showTyping();
+
+            // Simuler un délai de réponse
+            const delay = hasFiles ? 1500 + Math.random() * 2000 : 600 + Math.random() * 1400;
+            await new Promise(resolve => setTimeout(resolve, delay));
+
+            // Générer la réponse
+            const response = getModelResponse(currentModel, text || "Analyse des fichiers", hasFiles ? conversationHistory
+                .slice(-1)[0].files : null);
+
+            // Retirer le typing
+            removeTyping();
+
+            // Ajouter la réponse
+            addMessage(response, false, currentModel);
+
+            isProcessing = false;
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        function updateCharCount() {
+            const count = input.value.length;
+            charCount.textContent = count;
+            charCount.style.color = count > 2800 ? '#ef4444' : '#333355';
+        }
+
+        function newConversation() {
+            if (conversationHistory.length <= 1) return;
+            if (!confirm('📝 Commencer une nouvelle discussion ? La conversation actuelle sera sauvegardée.')) return;
+
+            resetConversation();
+            if (currentUser) {
+                saveConversation(currentUser, conversationHistory);
+            }
+            // Ajouter un message d'accueil personnalisé
+            addMessage(
+                `📝 Nouvelle discussion démarrée. Je suis ${MODELS[currentModel].name} ${MODELS[currentModel].icon}, prêt à vous aider !`,
+                false,
+                currentModel
+            );
+        }
+
+        function exportConversation() {
+            if (conversationHistory.length === 0) {
+                alert('Aucune conversation à exporter.');
+                return;
+            }
+
+            let text = '🧠 Multi-AI Hub - Conversation\n';
+            text += `📅 ${getFullTimestamp()}\n`;
+            text += `👤 ${userDisplay.textContent}\n`;
+            text += '═'.repeat(60) + '\n\n';
+
+            conversationHistory.forEach(msg => {
+                if (msg.role === 'user') {
+                    text += `🧑 Vous : ${msg.content}\n`;
+                    if (msg.files && msg.files.length > 0) {
+                        text += `📎 Fichiers : ${msg.files.map(f => f.name).join(', ')}\n`;
+                    }
+                    text += '\n';
+                } else {
+                    const modelInfo = MODELS[msg.model];
+                    text += `${modelInfo.icon} ${modelInfo.name} : ${msg.content}\n\n`;
+                }
+            });
+
+            text += '═'.repeat(60) + '\n';
+            text += `Exporté le ${getFullTimestamp()}`;
+
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `multi-ai-conversation-${Date.now()}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+
+        function handleLogout() {
+            if (!confirm('Voulez-vous vraiment vous déconnecter ?')) return;
+            clearSession();
+            currentUser = null;
+            appContainer.classList.remove('visible');
+            authOverlay.classList.remove('hidden');
+            loginEmail.value = '';
+            loginPassword.value = '';
+            loginError.textContent = '';
+            resetConversation();
+        }
+
+        // =============================================================
+        // GESTION DES FICHIERS
+        // =============================================================
+        function handleFileUpload(input, type) {
+            const files = Array.from(input.files);
+            if (files.length === 0) return;
+
+            // Limiter à 5 fichiers
+            if (attachedFiles.length + files.length > 5) {
+                alert('⚠️ Vous ne pouvez attacher que 5 fichiers maximum.');
+                input.value = '';
+                return;
+            }
+
+            // Limiter la taille (20 Mo)
+            const maxSize = 20 * 1024 * 1024;
+            const oversized = files.filter(f => f.size > maxSize);
+            if (oversized.length > 0) {
+                alert(`⚠️ ${oversized[0].name} dépasse 20 Mo.`);
+                input.value = '';
+                return;
+            }
+
+            attachedFiles.push(...files);
+            const names = attachedFiles.map(f => f.name).join(', ');
+            uploadStatus.textContent = `📎 ${attachedFiles.length} fichier(s) : ${names}`;
+            uploadStatus.style.color = '#a855f7';
+            input.value = '';
+
+            // Focus sur l'input pour poser une question
+            input.focus();
+            input.placeholder = `🔍 ${attachedFiles.length} fichier(s) attaché(s). Dites-moi ce que vous voulez analyser...`;
+        }
+
+        // =============================================================
+        // ÉVÉNEMENTS
+        // =============================================================
+
+        // Auth tabs
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => switchAuthTab(tab.dataset.tab));
+        });
+
+        // Login
+        loginForm.addEventListener('submit', handleLogin);
+
+        // Register
+        registerForm.addEventListener('submit', handleRegister);
+
+        // Enter sur les champs auth
+        loginPassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit'));
+        });
+        registerPassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') registerForm.dispatchEvent(new Event('submit'));
+        });
+
+        // Modèles
+        document.querySelectorAll('.model-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchModel(btn.dataset.model));
+        });
+
+        // Envoyer
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Entrée (Shift+Entrée pour retour à la ligne)
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-resize
+        input.addEventListener('input', () => {
+            updateCharCount();
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+        });
+
+        // Upload fichiers
+        fileInput.addEventListener('change', (e) => handleFileUpload(e.target, 'file'));
+        imageInput.addEventListener('change', (e) => handleFileUpload(e.target, 'image'));
+
+        // Nouvelle discussion
+        document.getElementById('newChatBtn').addEventListener('click', newConversation);
+
+        // Exporter
+        document.getElementById('exportBtn').addEventListener('click', exportConversation);
+
+        // Déconnexion
+        document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+
+        // =============================================================
+        // INITIALISATION
+        // =============================================================
+        updateCharCount();
+
+        // Vérifier la session
+        const session = getSession();
+        if (session && session.email) {
+            const users = getUsers();
+            if (users[session.email]) {
+                currentUser = session.email;
+                userDisplay.textContent = `👤 ${users[session.email].name || session.email}`;
+                authOverlay.classList.add('hidden');
+                appContainer.classList.add('visible');
+                loadConversation(session.email);
+            } else {
+                clearSession();
+            }
+        }
+
+        console.log('🧠 Multi-AI Hub chargé !');
+        console.log('📋 Modèles : Claude, ChatGPT, DeepSeek, Gemini, Mistral');
+        console.log('📎 Support : PDF, DOC, PPT, Images, TXT, CSV, etc.');
+        console.log('💾 Conversations sauvegardées automatiquement.');
+        console.log('👤 Utilisateur :', currentUser || 'Non connecté');
+    </script>
+
+</body>
+</html>
