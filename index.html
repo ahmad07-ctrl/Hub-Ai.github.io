@@ -1783,6 +1783,25 @@
                 clearSession();
             }
         }
+    // =============================================================
+// CONFIGURATION ET INITIALISATION FIREBASE
+// =============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyC0XWjo5cL48QklFhJe70xoSeBrWRa5CVU",
+  authDomain: "hubai-ac01b.firebaseapp.com",
+  projectId: "hubai-ac01b",
+  storageBucket: "hubai-ac01b.firebasestorage.app",
+  messagingSenderId: "838623767968",
+  appId: "1:838623767968:web:e36c16db73cf6122f088c5"
+};
+
+// Initialisation de Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Services prêts à être utilisés
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 
         console.log('🧠 Multi-AI Hub chargé !');
         console.log('📋 Modèles : Claude, ChatGPT, DeepSeek, Gemini, Mistral');
